@@ -26,17 +26,7 @@ def index():
 
 @app.route('/stream')
 def stream_page():
-    return '''
-        <html>
-            <head>
-                <title>Live Face Recognition</title>
-            </head>
-            <body>
-                <h1>Live Stream</h1>
-                <img src="/video_feed" width="720" />
-            </body>
-        </html>
-    '''
+    return render_template('stream.html')
 
 @app.route('/video_feed')
 def video_feed():
