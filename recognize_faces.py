@@ -8,14 +8,24 @@ known_face_encodings = []
 known_face_names = []
 
 known_faces_dir = "known_faces"
+valid_extensions = (".jpg", ".jpeg", ".png")
 
-for filename in os.listdir(known_faces_dir):
-    if filename.endswith((".jpg", ".png")):
-        image_path = os.path.join(known_faces_dir, filename)
+for person_name in os.listdir(known_faces_dir):
+    person_dir = os.path.join(known_faces_dir, person_name)
+    if not os.path.isdir(person_dir):
+        continue
+
+    for filename in os.listdir(person_dir):
+        if not filename.lower().endswith(valid_extensions):
+            continue  # Skip non-image files like .DS_Store
+
+        image_path = os.path.join(person_dir, filename)
         image = face_recognition.load_image_file(image_path)
-        encoding = face_recognition.face_encodings(image)[0]
-        known_face_encodings.append(encoding)
-        known_face_names.append(os.path.splitext(filename)[0])  # e.g., "john.jpg" → "john"
+        encodings = face_recognition.face_encodings(image)
+
+        if encodings:  # Only add if a face was found
+            known_face_encodings.append(encodings[0])
+            known_face_names.append(person_name)
 
 # Start video capture
 cap = cv2.VideoCapture(0)
@@ -34,7 +44,7 @@ while True:
     face_encodings = face_recognition.face_encodings(rgb_small_frame, face_locations)
 
     for (top, right, bottom, left), face_encoding in zip(face_locations, face_encodings):
-        matches = face_recognition.compare_faces(known_face_encodings, face_encoding)
+        matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=0.5)
         name = "Unknown"
 
         # Use the first match with the smallest distance
